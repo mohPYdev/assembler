@@ -1,9 +1,17 @@
 #include <stdio.h>
 
-
-void readFile()
+void readFile(FILE *file)
 {
-
+    int c;
+    char line[200];
+    if (file) {
+        while ((c = getc(file)) != EOF){
+            while (fgets(line, sizeof(line), file)) {
+                printf("%s", line);
+            }
+        }
+        fclose(file);
+    }
 }
 
 void createLabelAddress()
@@ -38,5 +46,9 @@ int main()
     "slti","ori","lui","lw","sw","beq","jalr","j","halt"};
     const int oppcodes[15] = {0b0000,0b0001,0b0010,0b0011,0b0100,0b0101,0b0110,
     0b0111,0b1000,0b1001,0b1010,0b1011,0b1100,0b1101,0b1110};
+
+    FILE *file;
+    file = fopen("program.as", "r");
+    readFile(file);
     return 0;
 }
