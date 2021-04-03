@@ -1,21 +1,26 @@
 #include <stdio.h>
+#include <string.h>
 
-void readFile(FILE *file)
+char* readFile(FILE *file)
 {
+    char text[] = " ";
     int c;
     char line[200];
     if (file) {
-        while ((c = getc(file)) != EOF){
-            while (fgets(line, sizeof(line), file)) {
-                printf("%s", line);
-            }
+        while (fgets(line, sizeof(line), file)) {
+                strcat(text , line);
         }
+        
         fclose(file);
     }
+
+    return text;
 }
+
 
 void createLabelAddress()
 {
+
 
 }
 
@@ -50,5 +55,6 @@ int main()
     FILE *file;
     file = fopen("program.as", "r");
     readFile(file);
+    printf("%s" , readFile(file));    
     return 0;
 }
