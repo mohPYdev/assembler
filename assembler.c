@@ -1,20 +1,23 @@
 #include <stdio.h>
 #include <string.h>
 
-char* readFile(FILE *file)
+char** readFile(FILE *file)
 {
-    char text[] = " ";
     int c;
+    int i = 0;
     char line[200];
     if (file) {
         while (fgets(line, sizeof(line), file)) {
-                strcat(text , line);
+                //strcat(text , line);
+                i++;
         }
-        
+        char* text[9];
+        while (fgets(line, sizeof(line), file)) {
+                text[i] = line;
+        }
+        return text;
         fclose(file);
     }
-
-    return text;
 }
 
 
@@ -54,7 +57,9 @@ int main()
 
     FILE *file;
     file = fopen("program.as", "r");
-    readFile(file);
-    printf("%s" , readFile(file));    
+    char** content = readFile(file);
+    for (int i = 0 ; i < sizeof(content) ; i++){
+        printf("%s",content[i]);
+    }
     return 0;
 }
