@@ -88,28 +88,115 @@ int main()
     file1 = fopen("program.as", "r");
 
     if (file1){
+        int lineCounter = 0;
         while (fgets(line, sizeof(line), file1)) {
-            char *pch;
             int tokenCounter = 0;
+            char *pch;
             pch = strtok(line , "\t");
             tokenCounter++;
-            while(pch != NULL){
-                if(tokenCounter == 1 || tokenCounter == 2){
-                    for (int i = 0 ; i < 15 ; i++){
-                        int x = strcmp(mnemonics[i] , pch);
-                        if(x == 0)
-                        {
-                            char type = instType(pch);
-                            printf("%c\n" , type);
+            int opcode;
+            char *instruction;  
+            char type;
+            char *field1;
+            char *field2;
+            char *field3;
+
+            bool hasLabel = false;
+            //determine whether this line has a label or not!
+            for (int i = 0 ; i < sizeof(addresses)/4 ; i++){
+                if (lineCounter == addresses[i]) // it has a lable
+                    hasLabel = true;
+            }
+            // printf("%d" , hasLabel);
+
+            if (hasLabel){
+                while(pch != NULL){
+                    if(tokenCounter == 2){                  // get the opcode / instruction / type
+                        for (int i = 0 ; i < 15 ; i++){
+                            int x = strcmp(mnemonics[i] , pch);
+                            if(x == 0)
+                            {
+                                opcode = oppcodes[i];
+                                instruction = pch;
+                                type = instType(pch);
+                                break;
+                            }
+                        }          
+                    }
+                    else if (tokenCounter == 3){            // tokenize the registers and labels with ","
+                        int cammaCounter = 0;
+                        char *pch2;
+                        pch2 = strtok(pch , ",");
+                        cammaCounter++;
+                        while(pch2 != NULL){
+                           
+                            switch (cammaCounter)
+                            {
+                            case 1:
+                                field1 = pch2;
+                                break;
+                            case 2:
+                                field2 = pch2;
+                                break;
+                            case 3:
+                                field3 = pch2;
+                                break;
+                            }
+                            
+                            pch2 = strtok(NULL , ",");
+                            cammaCounter++;
                         }
                     }
+                    pch = strtok(NULL , "\t");
+                    tokenCounter++;
                 }
-                // printf("%s\t" , pch);
-                pch = strtok(NULL , "\t");
-                tokenCounter++;
             }
-            // printf("\n");
-        }
+
+            else{   // if the line doesn't have a label
+                        
+                while(pch != NULL){
+                    if(tokenCounter == 1){                  // get the opcode / instruction / type
+                        for (int i = 0 ; i < 15 ; i++){
+                            int x = strcmp(mnemonics[i] , pch);
+                            if(x == 0)
+                            {
+                                opcode = oppcodes[i];
+                                instruction = pch;
+                                type = instType(pch);
+                                break;
+                            }
+                        }          
+                    }
+                    else if (tokenCounter == 2){            // tokenize the registers and labels with ","
+                        int cammaCounter = 0;
+                        char *pch2;
+                        pch2 = strtok(pch , ",");
+                        cammaCounter++;
+                        while(pch2 != NULL){
+                           
+                            switch (cammaCounter)
+                            {
+                            case 1:
+                                field1 = pch2;
+                                break;
+                            case 2:
+                                field2 = pch2;
+                                break;
+                            case 3:
+                                field3 = pch2;
+                                break;
+                            }
+                            
+                            pch2 = strtok(NULL , ",");
+                            cammaCounter++;
+                        }
+                    }
+                    pch = strtok(NULL , "\t");
+                    tokenCounter++;
+                }
+            } // not labeled
+            lineCounter++;
+        }// line
         fclose(file1);
     }    
     return 0;
