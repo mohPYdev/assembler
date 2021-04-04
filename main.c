@@ -8,9 +8,18 @@ void createLabelAddress()
 
 }
 
-char* instType()
-{
+char instType(char* instruction)
+{   
+    char type ;
+    
+    if (strcmp(instruction , "add") == 0 || strcmp(instruction , "sub") == 0|| strcmp(instruction , "slt") == 0 || strcmp(instruction , "or") == 0 || strcmp(instruction , "nand") == 0)
+        type = 'R';
+    else if (strcmp(instruction , "j") == 0|| strcmp(instruction , "halt") == 0)
+        type = 'J';
+    else
+        type = 'I';
 
+    return type;
 }
 
 void builtFormat()
@@ -52,7 +61,6 @@ int main()
                 strncat(firstWord , &line[i] , 1);
                 i++;
             }
-            // printf("%s \n", firstWord);
             bool inThere = false;
             for(int j = 0 ; j < 15 ; j++){
                 int x = strcmp(firstWord,mnemonics[j]);
@@ -72,6 +80,37 @@ int main()
             lineCounter++;              
         }
         fclose(file);
-    }
+
+    }// now we have the symbolic table for labels and addresses.
+
+
+    FILE *file1;
+    file1 = fopen("program.as", "r");
+
+    if (file1){
+        while (fgets(line, sizeof(line), file1)) {
+            char *pch;
+            int tokenCounter = 0;
+            pch = strtok(line , "\t");
+            tokenCounter++;
+            while(pch != NULL){
+                if(tokenCounter == 1 || tokenCounter == 2){
+                    for (int i = 0 ; i < 15 ; i++){
+                        int x = strcmp(mnemonics[i] , pch);
+                        if(x == 0)
+                        {
+                            char type = instType(pch);
+                            printf("%c\n" , type);
+                        }
+                    }
+                }
+                // printf("%s\t" , pch);
+                pch = strtok(NULL , "\t");
+                tokenCounter++;
+            }
+            // printf("\n");
+        }
+        fclose(file1);
+    }    
     return 0;
 }
