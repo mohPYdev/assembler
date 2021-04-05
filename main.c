@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include <stdbool.h>
 
 void createLabelAddress()
@@ -22,14 +23,44 @@ char instType(char* instruction)
     return type;
 }
 
-void builtFormat()
+
+long builtFormat(char type , int opcode , int f1 , int f2 , int f3)
 {
 
+    unsigned long number = opcode;
+
+    switch (type)
+    {
+    case 'R':
+
+        number = number << 4;
+        number += f2;
+        number = number << 4;
+        number += f3;
+        number = number << 4;
+        number += f1;
+        number = number << 12; 
+        break;
+    case 'I':
+
+        number = number << 4;
+        number += f2;
+        number = number << 4;
+        number += f1;
+        number = number << 16;
+        number += f3;
+        break;
+    case 'J':
+        number  = number << 8;
+        number = number << 16;
+        number += f1;
+        break;
+    }
+
+    return number;
+
 }
 
-void coovertToDec(){
-
-}
 
 void writeToFile(){
 
@@ -42,8 +73,12 @@ int main()
 {
     const char *mnemonics[16] = {"add","sub","slt","or","nand","addi",
     "slti","ori","lui","lw","sw","beq","jalr","j","halt"};
-    const int oppcodes[15] = {0b0000,0b0001,0b0010,0b0011,0b0100,0b0101,0b0110,
-    0b0111,0b1000,0b1001,0b1010,0b1011,0b1100,0b1101,0b1110};
+    // const int oppcodes[15] = {0b0000,0b0001,0b0010,0b0011,0b0100,0b0101,0b0110,
+    // 0b0111,0b1000,0b1001,0b1010,0b1011,0b1100,0b1101,0b1110};
+    const int oppcodes[15] = {0,1,2,3,4,5,6,
+    7,8,9,10,11,12,13,14};
+
+    printf("%d" , oppcodes[2]);
 
     FILE *file;
     file = fopen("program.as", "r");
@@ -100,6 +135,7 @@ int main()
             char *field1;
             char *field2;
             char *field3;
+            int f1 , f2 , f3;
 
             bool hasLabel = false;
             //determine whether this line has a label or not!
@@ -195,6 +231,20 @@ int main()
                     tokenCounter++;
                 }
             } // not labeled
+
+            f1 = atoi(field1);
+            f2 = atoi(field2);
+            f3 = atoi(field3);
+
+            // find the offset for the labels in I type
+            for (int i = 0 ; i < 15 ; i++){
+                if (strcmp(field3 , labels[i]) == 0){
+                    f3 = addresses[i];
+                }
+            }
+            
+            unsigned long number = builtFormat(type , opcode , f1 , f2 , f3);
+            printf("%lu\n" , number);
             lineCounter++;
         }// line
         fclose(file1);
