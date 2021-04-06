@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+
+// constant variables for our mnemonics and their opcodes in the instruction set.
 const char *mnemonics[16] = {"add","sub","slt","or","nand","addi",
     "slti","ori","lui","lw","sw","beq","jalr","j","halt"};
 
@@ -10,10 +12,10 @@ const int oppcodes[15] = {0,1,2,3,4,5,6,
     7,8,9,10,11,12,13,14};
 
 
-int lenOfLabels(){
+int lenOfLabels(char* fileAdd){
 
     FILE *file3;
-    file3 = fopen("program.as", "r");
+    file3 = fopen(fileAdd, "r");
     char line[200];
     char firstWord[6];
     int labelCounter = 0;
@@ -40,16 +42,6 @@ int lenOfLabels(){
 
     return lineCounter - labelCounter;
 }
-
-
-
-
-
-
-
-
-
-
 
 
 char instType(char* instruction)
@@ -105,19 +97,27 @@ long builtFormat(char type , int opcode , int f1 , int f2 , int f3)
 }
 
 
-void writeToFile(){
-
+void writeToFile(char* fileWAdd , long number){
+    char *numToS;
+    long a = number;
+    itoa(a , numToS , 10);
+    strcat(numToS , "\n");    
+    FILE *filee;
+    filee = fopen(fileWAdd , "a");
+    fputs(numToS , filee);
+    fclose(filee);
 }
 
 
 
-
-int main()
+int main(int argc , char* argv[])
 {
-    int labelSize = lenOfLabels();
+
+
+    int labelSize = lenOfLabels(argv[1]);
 
     FILE *file;
-    file = fopen("program.as", "r");
+    file = fopen(argv[1], "r");
     char line[200];
     char firstWord[6];
     char labels[labelSize+1][6];
@@ -156,7 +156,7 @@ int main()
 
 
     FILE *file1;
-    file1 = fopen("program.as", "r");
+    file1 = fopen(argv[1], "r");
 
     if (file1){
         int lineCounter = 0;
@@ -204,7 +204,7 @@ int main()
                         
      
 
-                        if (isDirective){                       /// handle the directives
+                        if (isDirective){                       /// handling the directives
                             int dirlabelAddress = -1;
                             for(int i = 0 ; i < labelSize ; i++){
                                 if (strcmp(pch , labels[i]) == 0 ){
@@ -271,7 +271,7 @@ int main()
                     else if (tokenCounter == 2){            // tokenize the registers and labels with ","
                         
                         
-                        if (isDirective){              /// handle the directives
+                        if (isDirective){              /// handling the directives
                             int dirlabelAddress = -1;
                             for(int i = 0 ; i < labelSize ; i++){
                                 if (strcmp(pch , labels[i]) == 0 ){
@@ -351,7 +351,8 @@ int main()
                 number = builtFormat(type , opcode , f1 , f2 , f3);
             }
             
-            printf("%li\n" , number);
+            // printf("%li\n" , number);
+            writeToFile(argv[2] , number);
             lineCounter++;
         }// line
         fclose(file1);
