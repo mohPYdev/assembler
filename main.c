@@ -3,11 +3,54 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-void createLabelAddress()
-{
+const char *mnemonics[16] = {"add","sub","slt","or","nand","addi",
+    "slti","ori","lui","lw","sw","beq","jalr","j","halt"};
+
+const int oppcodes[15] = {0,1,2,3,4,5,6,
+    7,8,9,10,11,12,13,14};
 
 
+int lenOfLabels(){
+
+    FILE *file3;
+    file3 = fopen("program.as", "r");
+    char line[200];
+    char firstWord[6];
+    int labelCounter = 0;
+    int lineCounter = 0;
+    if (file3) {
+        while (fgets(line, sizeof(line), file3)) {  
+            firstWord[0] = '\0';
+            int i = 0;
+            while(line[i] != '\t'){
+                strncat(firstWord , &line[i] , 1);
+                i++;
+            }
+            for(int j = 0 ; j < 15 ; j++){
+                int x = strcmp(firstWord,mnemonics[j]);
+                if(x == 0){
+                    labelCounter++;
+                    break;
+                }
+            }
+            lineCounter++;               
+        }
+        fclose(file3);
+    }
+
+    return lineCounter - labelCounter;
 }
+
+
+
+
+
+
+
+
+
+
+
 
 char instType(char* instruction)
 {   
@@ -71,21 +114,14 @@ void writeToFile(){
 
 int main()
 {
-    const char *mnemonics[16] = {"add","sub","slt","or","nand","addi",
-    "slti","ori","lui","lw","sw","beq","jalr","j","halt"};
-    // const int oppcodes[15] = {0b0000,0b0001,0b0010,0b0011,0b0100,0b0101,0b0110,
-    // 0b0111,0b1000,0b1001,0b1010,0b1011,0b1100,0b1101,0b1110};
-    const int oppcodes[15] = {0,1,2,3,4,5,6,
-    7,8,9,10,11,12,13,14};
-
-    printf("%d" , oppcodes[2]);
+    int labelSize = lenOfLabels();
 
     FILE *file;
     file = fopen("program.as", "r");
     char line[200];
     char firstWord[6];
-    char labels[10][6];
-    char addresses[10];
+    char labels[labelSize+1][6];
+    char addresses[labelSize+1];
     int lineCounter = 0;
     int z = 0;
     if (file) {
@@ -124,6 +160,7 @@ int main()
 
     if (file1){
         int lineCounter = 0;
+        long number;
         while (fgets(line, sizeof(line), file1)) {
             int tokenCounter = 0;
             char *pch;
@@ -136,18 +173,21 @@ int main()
             char *field2;
             char *field3;
             int f1 , f2 , f3;
+            bool isDirective = true;
 
             bool hasLabel = false;
             //determine whether this line has a label or not!
-            for (int i = 0 ; i < sizeof(addresses)/4 ; i++){
-                if (lineCounter == addresses[i]) // it has a lable
+            for (int i = 0 ; i < 5 ; i++){
+                if (lineCounter == addresses[i]) // it has a label
                     hasLabel = true;
             }
-            // printf("%d" , hasLabel);
-
+            
+      
             if (hasLabel){
                 while(pch != NULL){
                     if(tokenCounter == 2){                  // get the opcode / instruction / type
+
+  
                         for (int i = 0 ; i < 15 ; i++){
                             int x = strcmp(mnemonics[i] , pch);
                             if(x == 0)
@@ -155,18 +195,42 @@ int main()
                                 opcode = oppcodes[i];
                                 instruction = pch;
                                 type = instType(pch);
+                                isDirective = false;
                                 break;
                             }
                         }          
                     }
                     else if (tokenCounter == 3){            // tokenize the registers and labels with ","
-                        int cammaCounter = 0;
+                        
+     
+
+                        if (isDirective){                       /// handle the directives
+                            int dirlabelAddress = -1;
+                            for(int i = 0 ; i < labelSize ; i++){
+                                if (strcmp(pch , labels[i]) == 0 ){
+                                    dirlabelAddress = addresses[i];
+                                    break; 
+                                }
+                            }
+                            if (dirlabelAddress == -1)
+                                number = atoi(pch);
+                            else
+                                number = dirlabelAddress;
+                            break;
+                        }
+
+                        if (type == 'J'){ 
+                            field3 = pch;
+                            break; 
+                        }
+
+                        int commaCounter = 0;
                         char *pch2;
                         pch2 = strtok(pch , ",");
-                        cammaCounter++;
+                        commaCounter++;
                         while(pch2 != NULL){
                            
-                            switch (cammaCounter)
+                            switch (commaCounter)
                             {
                             case 1:
                                 field1 = pch2;
@@ -180,7 +244,7 @@ int main()
                             }
                             
                             pch2 = strtok(NULL , ",");
-                            cammaCounter++;
+                            commaCounter++;
                         }
                     }
                     pch = strtok(NULL , "\t");
@@ -199,18 +263,40 @@ int main()
                                 opcode = oppcodes[i];
                                 instruction = pch;
                                 type = instType(pch);
+                                isDirective= false;
                                 break;
                             }
                         }          
                     }
                     else if (tokenCounter == 2){            // tokenize the registers and labels with ","
-                        int cammaCounter = 0;
+                        
+                        
+                        if (isDirective){              /// handle the directives
+                            int dirlabelAddress = -1;
+                            for(int i = 0 ; i < labelSize ; i++){
+                                if (strcmp(pch , labels[i]) == 0 ){
+                                    dirlabelAddress = addresses[i];
+                                    break; 
+                                }
+                            }
+                            if (dirlabelAddress == -1)
+                                number = atoi(pch);
+                            else
+                                number = dirlabelAddress;
+                            break;
+                        }
+
+                        if (type == 'J'){ 
+                            field3 = pch;
+                            break; 
+                        }
+                        int commaCounter = 0;
                         char *pch2;
                         pch2 = strtok(pch , ",");
-                        cammaCounter++;
+                        commaCounter++;
                         while(pch2 != NULL){
                            
-                            switch (cammaCounter)
+                            switch (commaCounter)
                             {
                             case 1:
                                 field1 = pch2;
@@ -224,7 +310,7 @@ int main()
                             }
                             
                             pch2 = strtok(NULL , ",");
-                            cammaCounter++;
+                            commaCounter++;
                         }
                     }
                     pch = strtok(NULL , "\t");
@@ -232,19 +318,40 @@ int main()
                 }
             } // not labeled
 
-            f1 = atoi(field1);
-            f2 = atoi(field2);
-            f3 = atoi(field3);
+            if (!isDirective){
+                f1 = atoi(field1);
+                f2 = atoi(field2);
+                f3 = atoi(field3);
 
-            // find the offset for the labels in I type
-            for (int i = 0 ; i < 15 ; i++){
-                if (strcmp(field3 , labels[i]) == 0){
-                    f3 = addresses[i];
+
+                // find the offset for the labels in I type
+                for (int i = 0 ; i < labelSize ; i++){
+                    if (strcmp(field3 , labels[i]) == 0){
+                        f3 = addresses[i];
+                    }
                 }
+
+
+                switch(opcode){                     // handling the exceptions in formatting the fields
+                    case 8:             //lui
+                        f3 = f2;
+                        f2 = 0;
+                        break;
+                    case 12:            // jalr
+                        f3 = 0;
+                        break;
+                    case 13:
+                        f1 = f3;
+                        f2 = 0 , f3 = 0 ;
+                        break;
+                    case 14:
+                        f1 = 0 , f2 = 0 , f3 = 0;
+                }
+
+                number = builtFormat(type , opcode , f1 , f2 , f3);
             }
             
-            unsigned long number = builtFormat(type , opcode , f1 , f2 , f3);
-            printf("%lu\n" , number);
+            printf("%li\n" , number);
             lineCounter++;
         }// line
         fclose(file1);
