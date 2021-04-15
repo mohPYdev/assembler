@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <unistd.h>
 
 
 // constant variables for our mnemonics and their opcodes in the instruction set.
@@ -98,10 +99,12 @@ long builtFormat(char type , int opcode , int f1 , int f2 , int f3)
 
 
 void writeToFile(char* fileWAdd , long number){
-    char *numToS;
+    char *numToS = malloc(20);
     long a = number;
-    itoa(a , numToS , 10);
-    strcat(numToS , "\n");    
+
+    sprintf(numToS , "%li" , a);
+    strcat(numToS , "\n");
+
     FILE *filee;
     filee = fopen(fileWAdd , "a");
     fputs(numToS , filee);
@@ -109,10 +112,12 @@ void writeToFile(char* fileWAdd , long number){
 }
 
 
-
 int main(int argc , char* argv[])
 {
 
+    if( access( argv[2], F_OK ) == 0 ) {
+        remove(argv[2]);
+    }
 
     int labelSize = lenOfLabels(argv[1]);
 
@@ -121,7 +126,7 @@ int main(int argc , char* argv[])
     char line[200];
     char firstWord[6];
     char labels[labelSize+1][6];
-    char addresses[labelSize+1];
+    int addresses[labelSize+1];
     int lineCounter = 0;
     int z = 0;
     if (file) {
@@ -144,6 +149,10 @@ int main(int argc , char* argv[])
 
             if (inThere == false){
                 strcpy(labels[z] , firstWord);
+                if(lineCounter > 65535){
+                    printf("!!! offset is longer than 16 bits !!!");
+                    return -1;
+                }
                 addresses[z] = lineCounter;
                 z++;  
             }   
@@ -153,7 +162,6 @@ int main(int argc , char* argv[])
         fclose(file);
 
     }// now we have the symbolic table for labels and addresses.
-
 
     FILE *file1;
     file1 = fopen(argv[1], "r");
@@ -177,17 +185,18 @@ int main(int argc , char* argv[])
 
             bool hasLabel = false;
             //determine whether this line has a label or not!
-            for (int i = 0 ; i < 5 ; i++){
+            for (int i = 0 ; i < labelSize ; i++){
                 if (lineCounter == addresses[i]) // it has a label
                     hasLabel = true;
             }
             
+           
       
             if (hasLabel){
                 while(pch != NULL){
                     if(tokenCounter == 2){                  // get the opcode / instruction / type
 
-  
+                       
                         for (int i = 0 ; i < 15 ; i++){
                             int x = strcmp(mnemonics[i] , pch);
                             if(x == 0)
@@ -198,12 +207,17 @@ int main(int argc , char* argv[])
                                 isDirective = false;
                                 break;
                             }
-                        }          
+                        }   
+                        
+                        // checking the undefined opcode exception!!
+                        if(isDirective && strcmp(pch , ".fill") != 0 ){
+                            printf("!!! undefined opcode !!!");
+                            return -1;
+                        }
+
                     }
                     else if (tokenCounter == 3){            // tokenize the registers and labels with ","
-                        
-     
-
+                
                         if (isDirective){                       /// handling the directives
                             int dirlabelAddress = -1;
                             for(int i = 0 ; i < labelSize ; i++){
@@ -219,8 +233,9 @@ int main(int argc , char* argv[])
                             break;
                         }
 
-                        if (type == 'J'){ 
-                            field3 = pch;
+                        if (type == 'J'){
+                            if (opcode == 13) 
+                                field3 = pch;
                             break; 
                         }
 
@@ -267,6 +282,13 @@ int main(int argc , char* argv[])
                                 break;
                             }
                         }          
+                        
+                        // handling the undefined opcode exception!!
+                        if (isDirective && strcmp(pch , ".fill") != 0){
+                            printf("!!! undefined opcode !!!");
+                            return -1;
+                        }
+
                     }
                     else if (tokenCounter == 2){            // tokenize the registers and labels with ","
                         
@@ -287,7 +309,8 @@ int main(int argc , char* argv[])
                         }
 
                         if (type == 'J'){ 
-                            field3 = pch;
+                            if (opcode == 13)
+                                field3 = pch;
                             break; 
                         }
                         int commaCounter = 0;
@@ -319,39 +342,74 @@ int main(int argc , char* argv[])
             } // not labeled
 
             if (!isDirective){
+
+                // printf("%d\n", opcode);
+
+                if (opcode == 8){
+                    field3 = field2;
+                }
+
                 f1 = atoi(field1);
                 f2 = atoi(field2);
                 f3 = atoi(field3);
 
+               
+                // printf("f1 : %s , f2 : %s , f3: %s\n" , field1 , field2 , field3);
 
-                // find the offset for the labels in I type
-                for (int i = 0 ; i < labelSize ; i++){
-                    if (strcmp(field3 , labels[i]) == 0){
-                        f3 = addresses[i];
+                // check if the label is valid
+                char *ntos = malloc(20);
+                bool isNum = false;
+                for(int i = 0 ; i < 32 ; i++){
+                    int a = i;
+                    sprintf(ntos , "%d" , a);
+                    if (strcmp(ntos , field3) == 0){
+                        isNum = true;
+                        break;
                     }
                 }
 
+              
+
+                if(!isNum && opcode != 14 && opcode != 12){
+                    bool labelCorrect = false;
+                    // find the offset for the labels in I type
+                    for (int i = 0 ; i < labelSize ; i++){
+                        if (strcmp(field3 , labels[i]) == 0){
+                            f3 = addresses[i];
+                            labelCorrect = true;
+                            break;
+                        }
+                    }
+                    
+                    // catch an exception for unidentified label
+                    if(!labelCorrect){
+                        printf("!!! undefined label !!!");
+                        return -1;
+                    }
+                }
+
+                
 
                 switch(opcode){                     // handling the exceptions in formatting the fields
                     case 8:             //lui
-                        f3 = f2;
+                        // f3 = f2;
                         f2 = 0;
                         break;
                     case 12:            // jalr
                         f3 = 0;
                         break;
-                    case 13:
+                    case 13:            //j
                         f1 = f3;
                         f2 = 0 , f3 = 0 ;
                         break;
-                    case 14:
+                    case 14:                        //halt
                         f1 = 0 , f2 = 0 , f3 = 0;
                 }
 
                 number = builtFormat(type , opcode , f1 , f2 , f3);
             }
             
-            // printf("%li\n" , number);
+            printf("%li\n" , number);
             writeToFile(argv[2] , number);
             lineCounter++;
         }// line
