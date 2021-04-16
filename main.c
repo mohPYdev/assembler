@@ -22,7 +22,7 @@ int lenOfLabels(char* fileAdd){
     int labelCounter = 0;
     int lineCounter = 0;
     if (file3) {
-        while (fgets(line, sizeof(line), file3)) {  
+        while (fgets(line, sizeof(line), file3)) {
             firstWord[0] = '\0';
             int i = 0;
             while(line[i] != '\t'){
@@ -36,7 +36,7 @@ int lenOfLabels(char* fileAdd){
                     break;
                 }
             }
-            lineCounter++;               
+            lineCounter++;
         }
         fclose(file3);
     }
@@ -46,9 +46,9 @@ int lenOfLabels(char* fileAdd){
 
 
 char instType(char* instruction)
-{   
+{
     char type ;
-    
+
     if (strcmp(instruction , "add") == 0 || strcmp(instruction , "sub") == 0|| strcmp(instruction , "slt") == 0 || strcmp(instruction , "or") == 0 || strcmp(instruction , "nand") == 0)
         type = 'R';
     else if (strcmp(instruction , "j") == 0|| strcmp(instruction , "halt") == 0)
@@ -75,7 +75,7 @@ long builtFormat(char type , int opcode , int f1 , int f2 , int f3)
         number += f3;
         number = number << 4;
         number += f1;
-        number = number << 12; 
+        number = number << 12;
         break;
     case 'I':
 
@@ -101,10 +101,19 @@ long builtFormat(char type , int opcode , int f1 , int f2 , int f3)
 void writeToFile(char* fileWAdd , long number){
     char *numToS = malloc(20);
     long a = number;
+<<<<<<< Updated upstream
 
     sprintf(numToS , "%li" , a);
     strcat(numToS , "\n");
 
+=======
+    printf("hello");
+    //sprintf(numToS , "%lu" , a);
+    itoa(b , numToS , 10);
+    printf("hello2");
+    strncat(numToS , "\n", 1);
+    printf("hello3");
+>>>>>>> Stashed changes
     FILE *filee;
     filee = fopen(fileWAdd , "a");
     fputs(numToS , filee);
@@ -130,7 +139,7 @@ int main(int argc , char* argv[])
     int lineCounter = 0;
     int z = 0;
     if (file) {
-        while (fgets(line, sizeof(line), file)) {  
+        while (fgets(line, sizeof(line), file)) {
             firstWord[0] = '\0';
             int i = 0;
             while(line[i] != '\t'){
@@ -154,10 +163,10 @@ int main(int argc , char* argv[])
                     return -1;
                 }
                 addresses[z] = lineCounter;
-                z++;  
-            }   
+                z++;
+            }
 
-            lineCounter++;              
+            lineCounter++;
         }
         fclose(file);
 
@@ -175,7 +184,7 @@ int main(int argc , char* argv[])
             pch = strtok(line , "\t");
             tokenCounter++;
             int opcode;
-            char *instruction;  
+            char *instruction;
             char type;
             char *field1;
             char *field2;
@@ -189,14 +198,23 @@ int main(int argc , char* argv[])
                 if (lineCounter == addresses[i]) // it has a label
                     hasLabel = true;
             }
+<<<<<<< Updated upstream
             
            
       
+=======
+
+
+>>>>>>> Stashed changes
             if (hasLabel){
                 while(pch != NULL){
                     if(tokenCounter == 2){                  // get the opcode / instruction / type
 
+<<<<<<< Updated upstream
                        
+=======
+
+>>>>>>> Stashed changes
                         for (int i = 0 ; i < 15 ; i++){
                             int x = strcmp(mnemonics[i] , pch);
                             if(x == 0)
@@ -207,6 +225,7 @@ int main(int argc , char* argv[])
                                 isDirective = false;
                                 break;
                             }
+<<<<<<< Updated upstream
                         }   
                         
                         // checking the undefined opcode exception!!
@@ -214,6 +233,13 @@ int main(int argc , char* argv[])
                             printf("!!! undefined opcode !!!");
                             return -1;
                         }
+=======
+                        }
+                    }
+                    else if (tokenCounter == 3){            // tokenize the registers and labels with ","
+
+
+>>>>>>> Stashed changes
 
                     }
                     else if (tokenCounter == 3){            // tokenize the registers and labels with ","
@@ -223,7 +249,7 @@ int main(int argc , char* argv[])
                             for(int i = 0 ; i < labelSize ; i++){
                                 if (strcmp(pch , labels[i]) == 0 ){
                                     dirlabelAddress = addresses[i];
-                                    break; 
+                                    break;
                                 }
                             }
                             if (dirlabelAddress == -1)
@@ -234,9 +260,14 @@ int main(int argc , char* argv[])
                         }
 
                         if (type == 'J'){
+<<<<<<< Updated upstream
                             if (opcode == 13) 
                                 field3 = pch;
                             break; 
+=======
+                            field3 = pch;
+                            break;
+>>>>>>> Stashed changes
                         }
 
                         int commaCounter = 0;
@@ -244,7 +275,7 @@ int main(int argc , char* argv[])
                         pch2 = strtok(pch , ",");
                         commaCounter++;
                         while(pch2 != NULL){
-                           
+
                             switch (commaCounter)
                             {
                             case 1:
@@ -257,7 +288,7 @@ int main(int argc , char* argv[])
                                 field3 = pch2;
                                 break;
                             }
-                            
+
                             pch2 = strtok(NULL , ",");
                             commaCounter++;
                         }
@@ -268,7 +299,7 @@ int main(int argc , char* argv[])
             }
 
             else{   // if the line doesn't have a label
-                        
+
                 while(pch != NULL){
                     if(tokenCounter == 1){                  // get the opcode / instruction / type
                         for (int i = 0 ; i < 15 ; i++){
@@ -281,6 +312,7 @@ int main(int argc , char* argv[])
                                 isDirective= false;
                                 break;
                             }
+<<<<<<< Updated upstream
                         }          
                         
                         // handling the undefined opcode exception!!
@@ -289,16 +321,19 @@ int main(int argc , char* argv[])
                             return -1;
                         }
 
+=======
+                        }
+>>>>>>> Stashed changes
                     }
                     else if (tokenCounter == 2){            // tokenize the registers and labels with ","
-                        
-                        
+
+
                         if (isDirective){              /// handling the directives
                             int dirlabelAddress = -1;
                             for(int i = 0 ; i < labelSize ; i++){
                                 if (strcmp(pch , labels[i]) == 0 ){
                                     dirlabelAddress = addresses[i];
-                                    break; 
+                                    break;
                                 }
                             }
                             if (dirlabelAddress == -1)
@@ -308,17 +343,23 @@ int main(int argc , char* argv[])
                             break;
                         }
 
+<<<<<<< Updated upstream
                         if (type == 'J'){ 
                             if (opcode == 13)
                                 field3 = pch;
                             break; 
+=======
+                        if (type == 'J'){
+                            field3 = pch;
+                            break;
+>>>>>>> Stashed changes
                         }
                         int commaCounter = 0;
                         char *pch2;
                         pch2 = strtok(pch , ",");
                         commaCounter++;
                         while(pch2 != NULL){
-                           
+
                             switch (commaCounter)
                             {
                             case 1:
@@ -331,7 +372,7 @@ int main(int argc , char* argv[])
                                 field3 = pch2;
                                 break;
                             }
-                            
+
                             pch2 = strtok(NULL , ",");
                             commaCounter++;
                         }
@@ -408,12 +449,16 @@ int main(int argc , char* argv[])
 
                 number = builtFormat(type , opcode , f1 , f2 , f3);
             }
+<<<<<<< Updated upstream
             
+=======
+
+>>>>>>> Stashed changes
             printf("%li\n" , number);
             writeToFile(argv[2] , number);
             lineCounter++;
         }// line
         fclose(file1);
-    }    
+    }
     return 0;
 }
