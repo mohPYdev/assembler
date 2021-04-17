@@ -4,3 +4,6 @@ assembler.depend
 assembler.layout
 assembler.o
 main.exe
+main.o
+obj
+.vscode
