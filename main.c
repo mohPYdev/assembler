@@ -163,6 +163,12 @@ int main(int argc , char* argv[])
 
     }// now we have the symbolic table for labels and addresses.
 
+
+    for(int i = 0 ; i < labelSize ; i++){
+        printf("%s\n" , labels[i]);
+    }
+
+
     FILE *file1;
     file1 = fopen(argv[1], "r");
 
@@ -354,15 +360,19 @@ int main(int argc , char* argv[])
                 f3 = atoi(field3);
 
                
-                // printf("f1 : %s , f2 : %s , f3: %s\n" , field1 , field2 , field3);
+                printf("f1 : %s , f2 : %s , f3: %s\n" , field1 , field2 , field3);
 
                 // check if the label is valid
                 char *ntos = malloc(20);
                 bool isNum = false;
+
+                //checks if field3 is a number or not
                 for(int i = 0 ; i < 32 ; i++){
                     int a = i;
+                    // printf("hello");
                     sprintf(ntos , "%d" , a);
-                    if (strcmp(ntos , field3) == 0){
+                    int b = strcmp(ntos , field3);
+                    if (b == 0){
                         isNum = true;
                         break;
                     }
