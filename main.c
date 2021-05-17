@@ -18,16 +18,24 @@ int lenOfLabels(char* fileAdd){
     FILE *file3;
     file3 = fopen(fileAdd, "r");
     char line[200];
-    char firstWord[6];
+    char *firstWord = malloc(6);
     int labelCounter = 0;
     int lineCounter = 0;
     if (file3) {
         while (fgets(line, sizeof(line), file3)) {
-            firstWord[0] = '\0';
-            int i = 0;
-            while(line[i] != '\t'){
-                strncat(firstWord , &line[i] , 1);
-                i++;
+             int tokenCounter3 = 0;
+            char *pch1;
+            pch1 = strtok(line , " \t");
+            tokenCounter3++;
+            while (pch1 != NULL){
+                
+                if (tokenCounter3 == 1){
+                    firstWord = pch1;
+                    break;
+                }
+
+                pch1 = strtok(NULL , " \t");
+                tokenCounter3++;
             }
             for(int j = 0 ; j < 15 ; j++){
                 int x = strcmp(firstWord,mnemonics[j]);
@@ -78,7 +86,6 @@ long builtFormat(char type , int opcode , int f1 , int f2 , int f3)
         number = number << 12;
         break;
     case 'I':
-
         number = number << 4;
         number += f2;
         number = number << 4;
@@ -124,18 +131,26 @@ int main(int argc , char* argv[])
     FILE *file;
     file = fopen(argv[1], "r");
     char line[200];
-    char firstWord[6];
+    char *firstWord = malloc(6);
     char labels[labelSize+1][6];
     int addresses[labelSize+1];
     int lineCounter = 0;
     int z = 0;
     if (file) {
         while (fgets(line, sizeof(line), file)) {
-            firstWord[0] = '\0';
-            int i = 0;
-            while(line[i] != '\t'){
-                strncat(firstWord , &line[i] , 1);
-                i++;
+            int tokenCounter3 = 0;
+            char *pch1;
+            pch1 = strtok(line , " \t");
+            tokenCounter3++;
+            while (pch1 != NULL){
+                
+                if (tokenCounter3 == 1){
+                    firstWord = pch1;
+                    break;
+                }
+
+                pch1 = strtok(NULL , " \t");
+                tokenCounter3++;
             }
             bool inThere = false;
             for(int j = 0 ; j < 15 ; j++){
@@ -165,8 +180,9 @@ int main(int argc , char* argv[])
 
 
     for(int i = 0 ; i < labelSize ; i++){
-        printf("%s\n" , labels[i]);
+        // printf("%s\n" , labels[i]);
     }
+    // printf("%d" , labelSize);
 
 
     FILE *file1;
@@ -178,7 +194,7 @@ int main(int argc , char* argv[])
         while (fgets(line, sizeof(line), file1)) {
             int tokenCounter = 0;
             char *pch;
-            pch = strtok(line , "\t");
+            pch = strtok(line , " \t");
             tokenCounter++;
             int opcode;
             char *instruction;
@@ -268,7 +284,7 @@ int main(int argc , char* argv[])
                             commaCounter++;
                         }
                     }
-                    pch = strtok(NULL , "\t");
+                    pch = strtok(NULL , " \t");
                     tokenCounter++;
                 }
             }
@@ -342,7 +358,7 @@ int main(int argc , char* argv[])
                             commaCounter++;
                         }
                     }
-                    pch = strtok(NULL , "\t");
+                    pch = strtok(NULL , " \t");
                     tokenCounter++;
                 }
             } // not labeled
@@ -360,7 +376,6 @@ int main(int argc , char* argv[])
                 f3 = atoi(field3);
 
                
-                printf("f1 : %s , f2 : %s , f3: %s\n" , field1 , field2 , field3);
 
                 // check if the label is valid
                 char *ntos = malloc(20);
@@ -386,6 +401,12 @@ int main(int argc , char* argv[])
                     for (int i = 0 ; i < labelSize ; i++){
                         if (strcmp(field3 , labels[i]) == 0){
                             f3 = addresses[i];
+
+                            // implementing the pc relative addressing for branch instructions
+                            if (opcode == 11){
+                                f3 = f3 - (lineCounter + 1);
+                            }
+
                             labelCorrect = true;
                             break;
                         }
@@ -416,6 +437,7 @@ int main(int argc , char* argv[])
                         f1 = 0 , f2 = 0 , f3 = 0;
                 }
 
+                printf("f1 : %d , f2 : %d , f3: %d\n" , f1 , f2 , f3);
                 number = builtFormat(type , opcode , f1 , f2 , f3);
             }
             
