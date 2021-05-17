@@ -1,6 +1,0 @@
-
-
-[x] fix branch addressing (pc relative addressing)
-[] fix space and tab split 
-[] clean code 
-
